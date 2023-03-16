@@ -1,68 +1,85 @@
 import csv
-from typing import Dict, List, Set
+from typing import List
+
+
+path = "data/orders_1.csv"
+
+
+def read_csv(path_to_csv):
+    if not path_to_csv.endswith(".csv"):
+        raise FileNotFoundError(f"Extensão inválida: '{path_to_csv}'")
+
+    try:
+        with open(path_to_csv) as csv_file:
+            return list(csv.reader(csv_file, delimiter=","))
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Arquivo inexistente: {path_to_csv}")
+
+
+def write_txt_file(path_to_file, data_to_write: List):
+    with open(path_to_file, "w") as txt_file:
+        txt_file.write(
+            f"{data_to_write[0]}\n"
+            f"{data_to_write[1]}\n"
+            f"{data_to_write[2]}\n"
+            f"{data_to_write[3]}"
+        )
 
 
 def analyze_log(path_to_file: str):
-    logs: List[list]
+    logs = read_csv(path_to_file)
 
-    if not path_to_file.endswith(".csv"):
-        raise FileNotFoundError(f"Extensão inválida: '{path_to_file}'")
+    days = set()
+    orders = set()
 
-    try:
-        with open(path_to_file, "r") as file:
-            logs = list(csv.reader(file))
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Arquivo inexistente: '{path_to_file}'")
+    customers_data = dict()
 
-    clients_data: Dict = {}
+    for customer, order, day in logs:
+        days.add(day)
+        orders.add(order)
 
-    days_of_week: Set = set()
-
-    orders: Set = set()
-
-    for log in logs:
-        days_of_week.add(log[2])
-        orders.add(log[1])
-
-        if log[0] in clients_data:
-            if log[1] in clients_data[log[0]]["orders"]:
-                clients_data[log[0]]["orders"][log[1]] += 1
+        if customer in customers_data:
+            if (
+                order in customers_data[customer]["orders"]
+                and day in customers_data[customer]["frequency"]
+            ):
+                customers_data[customer]["orders"][order] += 1
+                customers_data[customer]["frequency"][day] += 1
             else:
-                clients_data[log[0]]["orders"][log[1]] = 1
-
-            if log[2] in clients_data[log[0]]["days"]:
-                pass
-            else:
-                clients_data[log[0]]["days"][log[2]] = True
+                customers_data[customer]["orders"][order] = 1
+                customers_data[customer]["frequency"][day] = 1
         else:
-            clients_data[log[0]] = {
-                "orders": {log[1]: 1},
-                "days": {log[2]: True},
+            customers_data[customer] = {
+                "orders": {order: 1},
+                "frequency": {day: 1},
             }
 
-    maria_more_ordered = max(
-        clients_data["maria"]["orders"],
-        key=clients_data["maria"]["orders"].get,
+    maria_most_ordered_dish = max(
+        customers_data["maria"]["orders"],
+        key=customers_data["maria"]["orders"].get,
     )
 
-    arnaldo_hamburguer_order_qtd = clients_data["arnaldo"]["orders"][
+    arnaldo_hamburguer_ordered_quantity = customers_data["arnaldo"]["orders"][
         "hamburguer"
     ]
 
-    joao_orders = set(clients_data["joao"]["orders"])
-
-    joao_days_go_to_cafeteria = set(clients_data["joao"]["days"])
-
-    orders_joao_never_ordered = orders.difference(joao_orders)
-
-    days_joao_never_go_to_cafeteria = days_of_week.difference(
-        joao_days_go_to_cafeteria
+    joao_never_dished_orders = orders.difference(
+        set(customers_data["joao"]["orders"])
     )
 
-    with open("data/mkt_campaign.txt", "w") as file:
-        file.write(
-            f"{maria_more_ordered}\n"
-            f"{arnaldo_hamburguer_order_qtd}\n"
-            f"{orders_joao_never_ordered}\n"
-            f"{days_joao_never_go_to_cafeteria}"
-        )
+    joao_never_visited_days = days.difference(
+        set(customers_data["joao"]["frequency"])
+    )
+
+    data_to_write = list(
+        [
+            maria_most_ordered_dish,
+            arnaldo_hamburguer_ordered_quantity,
+            joao_never_dished_orders,
+            joao_never_visited_days,
+        ]
+    )
+
+    write_path = "data/mkt_campaign.txt"
+
+    write_txt_file(write_path, data_to_write)
