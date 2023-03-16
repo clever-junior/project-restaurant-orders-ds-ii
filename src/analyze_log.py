@@ -2,8 +2,6 @@ import csv
 from typing import Dict, List, Set
 
 
-path = "data/orders_1.csv"
-
 def analyze_log(path_to_file: str):
     logs: List[list]
         
@@ -43,7 +41,10 @@ def analyze_log(path_to_file: str):
                 "days": { log[2]: True }
             }
 
-    maria_more_ordered = max(clients_data["maria"]["orders"], key=clients_data["maria"]["orders"].get)
+    maria_more_ordered = max(
+            clients_data["maria"]["orders"],
+            key=clients_data["maria"]["orders"].get
+            )
 
     arnaldo_hamburguer_order_qtd = clients_data["arnaldo"]["orders"]["hamburguer"]
     
