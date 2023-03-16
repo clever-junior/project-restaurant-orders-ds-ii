@@ -4,9 +4,9 @@ from typing import Dict, List, Set
 
 def analyze_log(path_to_file: str):
     logs: List[list]
-        
-    if not path_to_file.endswith('.csv'):
-        raise FileNotFoundError(f"Extensão inválida: '{path_to_file}'")         
+
+    if not path_to_file.endswith(".csv"):
+        raise FileNotFoundError(f"Extensão inválida: '{path_to_file}'")
 
     try:
         with open(path_to_file, "r") as file:
@@ -21,7 +21,6 @@ def analyze_log(path_to_file: str):
     orders: Set = set()
 
     for log in logs:
-        
         days_of_week.add(log[2])
         orders.add(log[1])
 
@@ -37,30 +36,33 @@ def analyze_log(path_to_file: str):
                 clients_data[log[0]]["days"][log[2]] = True
         else:
             clients_data[log[0]] = {
-                "orders": { log[1]: 1 },
-                "days": { log[2]: True }
+                "orders": {log[1]: 1},
+                "days": {log[2]: True},
             }
 
     maria_more_ordered = max(
-            clients_data["maria"]["orders"],
-            key=clients_data["maria"]["orders"].get
-            )
+        clients_data["maria"]["orders"],
+        key=clients_data["maria"]["orders"].get,
+    )
 
-    arnaldo_hamburguer_order_qtd = clients_data["arnaldo"]["orders"]["hamburguer"]
-    
+    arnaldo_hamburguer_order_qtd = clients_data["arnaldo"]["orders"][
+        "hamburguer"
+    ]
+
     joao_orders = set(clients_data["joao"]["orders"])
-    
+
     joao_days_go_to_cafeteria = set(clients_data["joao"]["days"])
 
     orders_joao_never_ordered = orders.difference(joao_orders)
-    
-    days_joao_never_go_to_cafeteria = days_of_week.difference(joao_days_go_to_cafeteria)
 
-    with open('data/mkt_campaign.txt', 'w') as file:
+    days_joao_never_go_to_cafeteria = days_of_week.difference(
+        joao_days_go_to_cafeteria
+    )
+
+    with open("data/mkt_campaign.txt", "w") as file:
         file.write(
             f"{maria_more_ordered}\n"
             f"{arnaldo_hamburguer_order_qtd}\n"
             f"{orders_joao_never_ordered}\n"
             f"{days_joao_never_go_to_cafeteria}"
         )
-
